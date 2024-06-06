@@ -344,6 +344,7 @@ export function ChatAction(props: {
   text: string;
   icon: JSX.Element;
   onClick: () => void;
+  isExpanded?: boolean;
 }) {
   const iconRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
@@ -363,6 +364,9 @@ export function ChatAction(props: {
     });
   }
 
+  useEffect(() => {
+    updateWidth();
+  }, [props.icon, props.text]);
   return (
     <div
       className={`${styles["chat-input-action"]} clickable`}
@@ -378,6 +382,7 @@ export function ChatAction(props: {
           "--full-width": `${width.full}px`,
         } as React.CSSProperties
       }
+      data-expanded={props.isExpanded} // 使用 data 属性来控制样式
     >
       <div ref={iconRef} className={styles["icon"]}>
         {props.icon}
@@ -539,21 +544,21 @@ export function ChatActions(props: {
           icon={props.uploading ? <LoadingButtonIcon /> : <ImageIcon />}
         />
       )}
-      <ChatAction
-        onClick={nextTheme}
-        text={Locale.Chat.InputActions.Theme[theme]}
-        icon={
-          <>
-            {theme === Theme.Auto ? (
-              <AutoIcon />
-            ) : theme === Theme.Light ? (
-              <LightIcon />
-            ) : theme === Theme.Dark ? (
-              <DarkIcon />
-            ) : null}
-          </>
-        }
-      />
+      {/*<ChatAction*/}
+      {/*  onClick={nextTheme}*/}
+      {/*  text={Locale.Chat.InputActions.Theme[theme]}*/}
+      {/*  icon={*/}
+      {/*    <>*/}
+      {/*      {theme === Theme.Auto ? (*/}
+      {/*        <AutoIcon />*/}
+      {/*      ) : theme === Theme.Light ? (*/}
+      {/*        <LightIcon />*/}
+      {/*      ) : theme === Theme.Dark ? (*/}
+      {/*        <DarkIcon />*/}
+      {/*      ) : null}*/}
+      {/*    </>*/}
+      {/*  }*/}
+      {/*/>*/}
 
       <ChatAction
         onClick={props.showPromptHints}
@@ -570,25 +575,28 @@ export function ChatActions(props: {
       />
 
       <ChatAction
-        text={Locale.Chat.InputActions.Clear}
-        icon={<BreakIcon />}
-        onClick={() => {
-          chatStore.updateCurrentSession((session) => {
-            if (session.clearContextIndex === session.messages.length) {
-              session.clearContextIndex = undefined;
-            } else {
-              session.clearContextIndex = session.messages.length;
-              session.memoryPrompt = ""; // will clear memory
-            }
-          });
-        }}
-      />
-
-      <ChatAction
+        isExpanded={true}
         onClick={() => setShowModelSelector(true)}
         text={currentModelName}
         icon={<RobotIcon />}
       />
+      <div style={{ marginLeft: "auto" }}>
+        <ChatAction
+          isExpanded={true}
+          text={Locale.Chat.InputActions.Clear}
+          icon={<BreakIcon />}
+          onClick={() => {
+            chatStore.updateCurrentSession((session) => {
+              if (session.clearContextIndex === session.messages.length) {
+                session.clearContextIndex = undefined;
+              } else {
+                session.clearContextIndex = session.messages.length;
+                session.memoryPrompt = ""; // will clear memory
+              }
+            });
+          }}
+        />
+      </div>
 
       {showModelSelector && (
         <Selector
